@@ -42,7 +42,8 @@ print(X_test.shape)
 #feature extraction
 feature_extraction = TfidfVectorizer(min_df=1, 
                                      stop_words='english',
-                                     lowercase=True)
+                                     lowercase=True,
+                                     ngram_range=(1, 2))
 X_train_features = feature_extraction.fit_transform(X_train)
 X_test_features = feature_extraction.transform(X_test)
 
@@ -53,7 +54,8 @@ y_test = y_test.astype('int')
 
 print(X_train_features)
 
-model = LogisticRegression(random_state=42)
+model = LogisticRegression(random_state=42,
+                           class_weight='balanced')
 
 model.fit(X_train_features, y_train)
 
@@ -63,7 +65,7 @@ print(f"the accuracy of the model is {accuracy_of_training}")
 
 y_pred_test = model.predict(X_test_features)
 accuracy_of_test = accuracy_score(y_test, y_pred_test)
-print(f"the accuracy of the model is {accuracy_of_training}")
+print(f"the accuracy of the model is {accuracy_of_test}")
 
 cm = confusion_matrix(y_test, y_pred_test)
 plt.figure(figsize=(9, 4))
@@ -90,8 +92,8 @@ sns.heatmap(
     annot=True,
     cbar=False,
     cmap='Set2',
-    xticklabels=["ham", "spam"],
-    yticklabels=["ham", "spam"]
+    xticklabels=["spam", "ham"],
+    yticklabels=["spam", "ham"]
 )
 
 plt.xlabel("Predicted")
@@ -99,7 +101,7 @@ plt.ylabel("Actual")
 plt.title("Spam Detection Confusion Matrix")
 plt.show()
 
-input_mail =  ("I've been searching for the right words to thank you for this breather. I promise i wont take your help for granted and will fulfil my promise. You have been wonderful and a blessing at all times.")
+input_mail =  ("URGENT: Your Account Has Been Locked. Dear Customer, we noticed unusual activity on your account. Click the secure link below to verify your login credentials immediately.")
 
 input_mail_features = feature_extraction.transform([input_mail])
 
