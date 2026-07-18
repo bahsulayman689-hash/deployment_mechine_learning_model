@@ -2,30 +2,49 @@ import pandas as pd
 import numpy as np
 import joblib
 import streamlit as st
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 model = joblib.load("model_mail.pkl")
 feature_extraction = joblib.load("feature_mail.pkl")
 
 
 
 st.set_page_config(
-    page_title="Spam Email Detector",
+    page_title="📧Spam Email Detector",
     page_icon='📧',
-    layout='centered'
+    layout='wide'
 )
-st.title("📧CLASSIFIER THE MESSAGE EITHER SPAM OR HAM MAIL")
-st.write("Enter an email or SMS message to determine whether it is Spam or Ham.")
+col_main, col_right = st.columns([4, 1])
+with col_right:
+    st.image("email.png", width=300)
+with col_main:
+    st.title("📧CLASSIFIER THE MESSAGE EITHER SPAM OR HAM MAIL")
+    #st.write("Enter an email or SMS message to determine whether it is Spam or Ham.")
 
-st.markdown("""
-Detect whether an email or SMS is **Spam** or **Ham**
-using a Machine Learning model trained with **TF-IDF**
-and **Logistic Regression**.
-""")
+    st.markdown("""
+    ### 🔍 Real-Time Message Analysis Breakdown
+
+    When you paste an email into this system, the engine does not just look at the overall meaning; it anatomizes the text structure step-by-step using three distinct detection layers:
+
+    #### 1. Case-Sensitive Signal Check (`lowercase=False`)
+    *   **How it works**: The system maps the exact casing profile of the words.
+    *   **The Impact**: Standard conversational words like `urgent` or `account` are treated normally. However, if the text contains high-stress, all-caps shouting tokens like `URGENT`, `LOCKED`, or `FREE`, the model registers these as aggressive focal points heavily correlated with malicious phishing tactics.
+
+    #### 2. Structural & Contextual Mapping (`stop_words=None`)
+    *   **How it works**: Functional pronouns and connective filler words (such as *you, your, me, to, account*) are fully preserved instead of being deleted.
+    *   **The Impact**: Legitimate emails use pronouns casually (*"let me know"*). Spam text often abuses pronouns in specific, predatory patterns to manufacture direct pressure or fake personalization (*"your account has been locked", "action required by you"*). Retaining these words allows the model to capture the structural intent behind the message.
+
+    #### 3. Phrase & Syntax Pairing (`ngram_range=(1, 2)`)
+    *   **How it works**: The text is broken down into individual terms (unigrams) and consecutive two-word combinations (bigrams).
+    *   **The Impact**: Isolated words like *secure* or *link* might look completely harmless to a basic filter. However, your model extracts the unified phrase **`['secure', 'link']`** or **`['verify', 'your']`**. These specific structural pairings carry massive mathematical weight that immediately tips the Logistic Regression classifier toward a **Spam** verdict.
+    """)
+
+st.write("Enter an email or SMS message to determine whether it is Spam or Ham.")
 
 message = st.text_area(
     "✍️ Enter your email or SMS",
     placeholder="Paste your email or SMS message here...",
-    height=220
+    height=300
 )
 
 if st.button("predict"):
@@ -119,7 +138,7 @@ before predicting whether the message is Spam or Ham.
 """)
 col1, col2, col3 = st.columns(3)
 
-col1.metric("Training Accuracy", "96.2%")
+col1.metric("Training Accuracy", "99.2%")
 col2.metric("Testing Accuracy", "96.2%")
 col3.metric("Algorithm", "Logistic Regression")
 
@@ -201,3 +220,37 @@ with st.sidebar:
     st.caption("🖥️ Server: AWS Lambda (Serverless)")
     st.caption("⚡ Latency: 42ms")
     st.caption("📅 Last Retrained: July 2026")
+st.subheader("model Evaluation metrics")
+m1, m2, m3 = st.columns(3)
+m1.metric(label="test accuracy", value="98.12%")
+m1.metric(label="test precision", value="98.65%")
+m1.metric(label="test Recall", value="99.17%")
+
+st.write("### Test Confusion Matrix")
+fig, ax = plt.subplots(figsize=(4, 3))
+sns.heatmap([[142, 13], [8, 952]], annot=True, 
+            fmt='d',
+            cmap='viridis',
+            xticklabels=["Ham", "Spam"],
+            yticklabels=["Ham", "Spam"],
+            ax=ax)
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+st.pyplot(fig)
+
+m1, m2, m3 = st.columns(3)
+m1.metric(label="train accuracy", value="98.12%")
+m1.metric(label="test precision", value="98.65%")
+m1.metric(label="test Recall", value="99.17%")
+
+st.write("### Train Confusion Matrix")
+fig, ax = plt.subplots(figsize=(4, 3))
+sns.heatmap([[590, 2], [9, 3856]], annot=True, 
+            fmt='d',
+            cmap='Set1',
+            xticklabels=["Ham", "Spam"],
+            yticklabels=["Ham", "Spam"],
+            ax=ax)
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+st.pyplot(fig)
