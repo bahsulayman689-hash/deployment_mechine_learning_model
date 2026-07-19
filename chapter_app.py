@@ -1,22 +1,34 @@
 import pandas as pd
 import numpy as np
 import joblib
+
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
-model = joblib.load("model_mail.pkl")
-feature_extraction = joblib.load("feature_mail.pkl")
+import sys
+import re
+ 
 
+def absolute_tokenizer(text):
+    return re.findall(r'\w+|[\W\s]', text)
 
+# 2. Force Python to register it directly into the global execution space
+import __main__
+__main__.absolute_tokenizer = absolute_tokenizer
+sys.modules['__main__'].absolute_tokenizer = absolute_tokenizer
+
+# 3. Now try loading your files
+model = joblib.load("Mail_test.pkl")
+feature_extraction = joblib.load("feature_test.pkl")
 
 st.set_page_config(
-    page_title="📧Spam Email Detector",
+    page_title="📧 Spam Email Detector",
     page_icon='📧',
     layout='wide'
 )
 col_main, col_right = st.columns([4, 1])
 with col_right:
-    st.image("email.png", width=300)
+    st.image("email.png", width=350)
 with col_main:
     st.title("📧CLASSIFIER THE MESSAGE EITHER SPAM OR HAM MAIL")
     #st.write("Enter an email or SMS message to determine whether it is Spam or Ham.")
@@ -38,8 +50,9 @@ with col_main:
     *   **How it works**: The text is broken down into individual terms (unigrams) and consecutive two-word combinations (bigrams).
     *   **The Impact**: Isolated words like *secure* or *link* might look completely harmless to a basic filter. However, your model extracts the unified phrase **`['secure', 'link']`** or **`['verify', 'your']`**. These specific structural pairings carry massive mathematical weight that immediately tips the Logistic Regression classifier toward a **Spam** verdict.
     """)
+st.write("👉Enter an email or SMS message to determine whether it is Spam or Ham.")
 
-st.write("Enter an email or SMS message to determine whether it is Spam or Ham.")
+st.caption("⚠️ **Note:** This model does not ignore punctuation or capitalization variations.")
 
 message = st.text_area(
     "✍️ Enter your email or SMS",
@@ -51,24 +64,33 @@ if st.button("predict"):
     if message.strip() == "":
         st.warning("please enter a meassage")
     else:
-        message_vector = feature_extraction.transform([message])
+        # NEW: Check if the text contains at least one actual letter or number
+        if not re.search(r'[a-zA-Z0-9]', message):
+            st.error("🚨 **Security Warning:** This text contains zero words recognized by the model vocabulary!")
+            st.info("🚨 System Action: Blocked for safety. Spammers often use scrambled symbols or pure gibberish to bypass standard text filters.")
 
-        prediction = model.predict(message_vector)[0]
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            predict = st.button("🔍 Analyze")
-
-        with col2:
-            clear = st.button("🗑️ Clear")
-
-        if prediction == 0:
-            st.error("🚨Spam mesaage")
-            st.write("This message contains characteristics commonly found in spam.")
         else:
-            st.success("✅Ham (Not Spam)")
-            st.write("This message appears to be legitimate.")
+                message_vector = feature_extraction.transform([message])
+                if message_vector.nnz == 0:
+                    st.error("🚨 **Security Warning:** This text contains zero words recognized by the model vocabulary!")
+                    st.info("🚨 System Action: Blocked for safety. Spammers often use scrambled symbols or pure gibberish to bypass standard text filters.")
+                else:
+                    prediction = model.predict(message_vector)[0]
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        predict = st.button("🔍 Analyze")
+
+                    with col2:
+                        clear = st.button("🗑️ Clear")
+
+                    if prediction == 0:
+                        st.error("🚨Spam mesaage")
+                        st.info("🚨This message contains characteristics commonly found in spam.")
+                    else:
+                        st.success("✅Ham (Not Spam)")
+                        st.info("✅This message appears to be legitimate.")
 st.balloons()
 with st.sidebar:
 
@@ -175,7 +197,7 @@ with st.sidebar.expander("👤 About Me"):
 
     st.write("""
     Hi! I'm Sulayman Bah.
-
+    I'm a mechine learning and deep learning enginner.
     I build Machine Learning and
     Deep Learning applications
     using Python and Streamlit.
@@ -191,7 +213,7 @@ st.divider()
 
 # --- SIDEBAR CONFIGURATION ---
 with st.sidebar:
-    st.image("email.png", width=60)
+    st.image("email.png", width=100)
     st.title("ML Ops Dashboard")
     st.markdown("---")
     
@@ -228,6 +250,7 @@ m1.metric(label="test Recall", value="99.17%")
 
 st.write("### Test Confusion Matrix")
 fig, ax = plt.subplots(figsize=(4, 3))
+sns.color_palette("pastel")
 sns.heatmap([[142, 13], [8, 952]], annot=True, 
             fmt='d',
             cmap='viridis',
@@ -245,6 +268,7 @@ m1.metric(label="test Recall", value="99.17%")
 
 st.write("### Train Confusion Matrix")
 fig, ax = plt.subplots(figsize=(4, 3))
+sns.color_palette("pastel")
 sns.heatmap([[590, 2], [9, 3856]], annot=True, 
             fmt='d',
             cmap='Set1',
