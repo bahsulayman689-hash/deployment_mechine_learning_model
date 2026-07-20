@@ -3,8 +3,7 @@ import numpy as np
 import joblib
 
 import streamlit as st
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 import sys
 import re
  
@@ -187,8 +186,8 @@ with st.sidebar:
 with st.sidebar:
 
     st.subheader("🔗 Connect")
-
-    st.markdown("[GitHub](https://github.com/bahsulayman689-hash/deployment_mechine_learning_model/commits?author=bahsulayman689-hash)")
+    st.markdown()
+    st.markdown("[GitHub](https://github.com/)")
 
     st.markdown("[LinkedIn](https://linkedin.com/in/WIN_20250906_05_26_12_Pro.jpg)")
 
@@ -248,33 +247,3 @@ m1.metric(label="test accuracy", value="98.12%")
 m1.metric(label="test precision", value="98.65%")
 m1.metric(label="test Recall", value="99.17%")
 
-st.write("### Test Confusion Matrix")
-fig, ax = plt.subplots(figsize=(4, 3))
-sns.color_palette("pastel")
-sns.heatmap([[142, 13], [8, 952]], annot=True, 
-            fmt='d',
-            cmap='viridis',
-            xticklabels=["Ham", "Spam"],
-            yticklabels=["Ham", "Spam"],
-            ax=ax)
-plt.ylabel('Actual')
-plt.xlabel('Predicted')
-st.pyplot(fig)
-
-m1, m2, m3 = st.columns(3)
-m1.metric(label="train accuracy", value="98.12%")
-m1.metric(label="test precision", value="98.65%")
-m1.metric(label="test Recall", value="99.17%")
-
-st.write("### Train Confusion Matrix")
-fig, ax = plt.subplots(figsize=(4, 3))
-sns.color_palette("pastel")
-sns.heatmap([[590, 2], [9, 3856]], annot=True, 
-            fmt='d',
-            cmap='Set1',
-            xticklabels=["Ham", "Spam"],
-            yticklabels=["Ham", "Spam"],
-            ax=ax)
-plt.ylabel('Actual')
-plt.xlabel('Predicted')
-st.pyplot(fig)
